@@ -1,0 +1,176 @@
+ <form ref="form" @submit.stop.prevent="emitSubmit" v-if="dataForm">
+      <b-row>
+        <b-col lg="4" xl="4">
+          <!-- check null dataForm.IsActive[1] -->
+          <!-- !disableEdit(false) -->
+          <b-row class="align-items-center">
+            <b-col lg="4" xl="4">
+              <b-form-group :label="dataForm.OID[0]">
+                <b-form-input
+                  class="text-center"
+                  :value="dataForm.OID[1] ? dataForm.OID[1] : 'AUTO'"
+                  disabled
+                ></b-form-input>
+              </b-form-group>
+            </b-col>
+            <b-col lg="8" xl="8">
+              <b-form-group
+                :label="dataForm.ODate[0]"
+                :invalid-feedback="$t('form.no-blank')"
+                :state="stateForm.ODate"
+              >
+                <datepicker
+                  :language="locale"
+                  :format="datePickerFormat"
+                  :bootstrap-styling="true"
+                  :placeholder="$t('modal.day-select')"
+                  v-model="dataForm.ODate[1]"
+                  :disabled="!disableAdd"
+                  @input="formatDateToServer(dataForm.ODate[1], 'ODate')"
+                  id="Odate-input"
+                ></datepicker>
+              </b-form-group>
+            </b-col>
+          </b-row>
+          <b-row>
+            <b-col lg="12">
+              <b-form-group
+                :label="dataForm.VehicleGroupID[0]"
+                :invalid-feedback="$t('form.no-blank')"
+                :state="stateForm.VehicleGroupID"
+              >
+                <v-select
+                  v-model="dataForm.VehicleGroupID[1]"
+                  :options="dataFormOptions.VehicleGroupID"
+                  :reduce="(item) => item.value"
+                  multiple
+                  :disabled="!disableAdd"
+                  id="VehicleGroupID-input"
+                >
+                </v-select>
+              </b-form-group>
+            </b-col>
+          </b-row>
+          <b-row>
+            <b-col lg="6" xl="6">
+              <b-form-group
+                :label="dataForm.TotalQuantityTrip[0]"
+                :state="stateForm.TotalQuantityTrip"
+                :invalid-feedback="$t('form.no-blank')"
+              >
+                <b-form-input
+                  class="text-right"
+                  v-model.number="dataForm.TotalQuantityTrip[1]"
+                  type="number"
+                  :disabled="!disableAdd"
+                  id="TotalQuantityTrip-input"
+                ></b-form-input>
+              </b-form-group>
+            </b-col>
+            <b-col lg="6" xl="6">
+              <b-form-group
+                :label="dataForm.TotalAmountTrip[0]"
+                :state="stateForm.TotalAmountTrip"
+                :invalid-feedback="$t('form.no-blank')"
+              >
+                <b-form-input
+                  v-model="dataForm.TotalAmountTrip[1]"
+                  class="text-right"
+                  type="text"
+                  :disabled="!disableAdd"
+                  id="TotalAmountTrip-input"
+                  @input="convertCurrency"
+                ></b-form-input>
+              </b-form-group>
+            </b-col>
+          </b-row>
+          <b-row>
+            <b-col lg="12" xl="12">
+              <b-form-group :label="dataForm.Note[0]">
+                <b-form-textarea
+                  v-model="dataForm.Note[1]"
+                  rows="2"
+                  max-rows="6"
+                  style="height: 113px"
+                  :disabled="!disableAdd"
+                ></b-form-textarea>
+              </b-form-group>
+            </b-col>
+          </b-row>
+        </b-col>
+        <b-col lg="4">
+          <ChildTable
+            :title="$t('npl.details-of-supplementary-items')"
+            :items="dataTableChildren"
+            :fields="fieldsChildren"
+            :pDataCurrency="pDataCurrency"
+            tableName="PieceTireAllowancesDetails"
+            @add="addChildTable"
+            @edit="editChildTable"
+            @remove="removeChildTable"
+            :disableAdd="disableAdd"
+          />
+        </b-col>
+        <b-col lg="2">
+          <div
+            v-if="dataForm.IsActive && dataForm.IsActive[1] == 1"
+            class="img-lock"
+          >
+            <img
+              src="/assets/img/npl/img-lock.png"
+              alt=""
+              style="height: 60px"
+            />
+          </div>
+        </b-col>
+      </b-row>
+    </form>
+    <b-modal
+      id="modal-child-table"
+      :title="titleModalChild"
+      body-class="body-modal-add"
+      size="md"
+      @ok="handleModalChildTable"
+      @hidden="hiddenModalChildTable"
+      cancel-variant="outline-danger"
+      :ok-title="$t('modal.change')"
+      :cancel-title="$t('modal.cancel')"
+    >
+      <template v-if="dataFormChildren">
+        <form ref="formChildren">
+          <b-row>
+            <b-col lg="12">
+              <b-form-group
+                :label="dataFormChildren.NumberOfRedemptions[0]"
+                :invalid-feedback="$t('form.no-blank')"
+                :state="stateFormChildren?.NumberOfRedemptions"
+              >
+                <b-form-input
+                  v-model.number="dataFormChildren.NumberOfRedemptions[1]"
+                  class="text-right"
+                  type="number"
+                  id="NumberOfRedemptions-input"
+                  min="1"
+                />
+              </b-form-group>
+            </b-col>
+
+            <b-col lg="12">
+              <b-form-group
+                :label="dataFormChildren.RouteID[0]"
+                :invalid-feedback="$t('form.no-blank')"
+                :state="stateFormChildren?.RouteID"
+              >
+                <v-select
+                  v-model="dataFormChildren.RouteID[1]"
+                  :options="dataFormOptionsChildren.RouteID"
+                  :reduce="(item) => item.value"
+                  id="RouteID-input"
+                >
+                </v-select>
+              </b-form-group>
+            </b-col>
+          </b-row>
+        </form>
+      </template>
+    </b-modal>
